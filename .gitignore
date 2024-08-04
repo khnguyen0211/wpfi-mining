@@ -1,5 +1,5 @@
 venv
 .vscode
-.algorithms/__pycache__
-.models/__pycache__
-.utils/__pycache__
+.algorithms/__pycache__/*
+.models/__pycache__/*
+.utils/__pycache__/*

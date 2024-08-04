@@ -15,17 +15,32 @@ class wPFIApriori(Generic[E, T]):
         self.t = t
         self.alpha = alpha
 
+    def wPFI_apriori_mining(self):
+        w_PFI_final = []
+        w_PFI_1 = self.find_size_one_wPFI()
+        w_PFI_final.append(w_PFI_1)
+        k = 1
+        while w_PFI_final[k - 1]:
+            Ck = self.generate_wpfi_candidates(w_PFI_final[k - 1])
+            w_PFI_k = self.find_size_k_wpfi(Ck)
+            w_PFI_final.append(w_PFI_k)
+            k += 1
+
+        w_PFI_final = [x for x in w_PFI_final if x]
+
+        return w_PFI_final
+
     def find_size_one_wPFI(self) -> list[set[E]]:
         sizeOneWpfis: list[set[E]] = []
         for i in self.items:
             itemList: set[E] = {i}
 
-            if self.isWpfi(itemList):
+            if self.is_wpfi(itemList):
                 sizeOneWpfis.append(itemList)
 
         return sizeOneWpfis
 
-    def isWpfi(self, item_set: set[E]) -> bool:
+    def is_wpfi(self, item_set: set[E]) -> bool:
         support = Utils.get_support(self.UD, item_set)
         expected_support = Utils.get_expected_support(self.UD, item_set)
         avg_weight = Utils.get_avg_weight(item_set)
@@ -46,43 +61,38 @@ class wPFIApriori(Generic[E, T]):
             probabilistic_support >= self.m_sup and upper_bound >= self.m_sup
         )
 
-    def wPFI_candidate_generate(self, W_PFIs: list[set[E]]):
-        # initial list for result
+    def generate_wpfi_candidates(self, W_PFIs: list[set[E]]):
         Ck: list[set[E]] = []
-        # item set I' contains all distinct item in w_PFI list
         IPrime: set[E] = Utils.get_distinct_list_from_w_PFIs(W_PFIs)
 
         for X in W_PFIs:
-            for item in Utils.get_difference_of_two_lists(IPrime, X):
+            difference_of_two_lists: set[E] = Utils.get_difference_of_two_lists(
+                IPrime, X
+            )
+            for item in difference_of_two_lists:
                 X_and_item = X.copy()
                 X_and_item.add(item)
 
                 if Utils.get_avg_weight(X_and_item) >= self.t:
-                    if self.list_helper.not_existed_in_set(Ck, X_and_item):
+                    if Utils.not_existed_in_set(Ck, X_and_item):
                         Ck.append(X_and_item)
 
-            minWeightItem = self.findMinWeightItem(
-                X
-            )  # find item has min weight in current item set X
-
-            # loop in item set: I − I' − X (code line 10 in algorithm 2)
-            for item in self.list_helper.get_different_of_two_list(
-                self.list_helper.get_different_of_two_list(
-                    self.all_distinct_item, IPrime
-                ),
+            minWeightItem: E = Utils.find_min_weight_item(X)
+            difference_of_two_nested_lists: set[E] = Utils.get_difference_of_two_lists(
+                Utils.get_difference_of_two_lists(self.items, IPrime),
                 X,
-            ):
-                # create temp item set X union current item
+            )
+            for item in difference_of_two_nested_lists:
                 X_and_item = X.copy()
                 X_and_item.add(item)
 
-                if self.calculator.get_avg_weight(
-                    X_and_item
-                ) >= self.t and item.getWeight() < (
-                    0.0 if minWeightItem is None else minWeightItem.getWeight()
+                if Utils.get_avg_weight(X_and_item) >= self.t and item.get_weight() < (
+                    0.0 if minWeightItem is None else minWeightItem.get_weight()
                 ):
-                    # list candidate doesn't contain that item set
-                    if self.list_helper.not_existed_in_set(Ck, X_and_item):
-                        Ck.append(X_and_item)  # add into candidate list
+                    if Utils.not_existed_in_set(Ck, X_and_item):
+                        Ck.append(X_and_item)
 
         return Ck
+
+    def find_size_k_wpfi(self, candidates: list[set[E]]):
+        return [candidate for candidate in candidates if self.is_wpfi(candidate)]

@@ -128,15 +128,19 @@ class Utils(Generic[E, T]):
 
     @staticmethod
     def get_upper_bound(expected_support: float, t: float, weight: float):
-        a = t / weight
-        x = math.log(a) ** 2 - 8 * expected_support * math.log(a)
-        y = 0.5 * (2 * expected_support - math.log(a) + math.sqrt(x))
+        a = t / max(weight, 1e-10)
+        x = math.log(a) ** 2 - 8 * expected_support * math.log(max(a, 1e-10))
+        y = 0.5 * (
+            2 * expected_support - math.log(max(a, 1e-10)) + math.sqrt(math.fabs(x))
+        )
         return Utils.format_double(y)
 
     @staticmethod
     def get_lower_bound(expected_support: float, t: float, weight: float):
-        a = t / weight
-        y = expected_support - math.sqrt(-2 * expected_support * math.log(1 - a))
+        a = t / max(weight, 1e-10)
+        y = expected_support - math.sqrt(
+            math.fabs(-2 * expected_support * math.log(max(math.fabs(1 - a), 1e-10)))
+        )
         return Utils.format_double(y)
 
     @staticmethod
@@ -144,10 +148,10 @@ class Utils(Generic[E, T]):
         if not item_set:
             return None
 
-        min_weight = min(item.getWeight() for item in item_set)
+        min_weight = min(item.get_weight() for item in item_set)
 
         for item in item_set:
-            if item.getWeight() == min_weight:
+            if item.get_weight() == min_weight:
                 return item
 
         return None

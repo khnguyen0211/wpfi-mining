@@ -1,15 +1,25 @@
 from typing import TypeVar, Generic, Set, List
 from models.item import Item
 from models.transaction import Transaction
-from utils.utils import formatDouble
+from utils.utils import Utils
 
-E = TypeVar('E', bound='Item')
-T = TypeVar('T', bound='Transaction')
+E = TypeVar("E", bound="Item")
+T = TypeVar("T", bound="Transaction")
+
 
 class Node(Generic[E, T]):
-    def __init__(self, item_set: Set[E] = None, sup: float = 0.0, e_sup: float = 0.0, p_sup: float = 0.0,
-                 lb: float = 0.0, ub: float = 0.0, parent: 'Node[E, T]' = None,
-                 children: List['Node[E, T]'] = None, avg_weight: float = 0.0):
+    def __init__(
+        self,
+        item_set: Set[E] = None,
+        sup: float = 0.0,
+        e_sup: float = 0.0,
+        p_sup: float = 0.0,
+        lb: float = 0.0,
+        ub: float = 0.0,
+        parent: "Node[E, T]" = None,
+        children: List["Node[E, T]"] = None,
+        avg_weight: float = 0.0,
+    ):
         self.item_set = item_set or set()
         self.sup = sup
         self.e_sup = e_sup
@@ -21,10 +31,10 @@ class Node(Generic[E, T]):
         self.avg_weight = avg_weight
         self.iswPFI = False
 
-    def get_parent(self) -> 'Node[E, T]':
+    def get_parent(self) -> "Node[E, T]":
         return self.parent
 
-    def set_parent(self, parent: 'Node'):
+    def set_parent(self, parent: "Node"):
         self.parent = parent
 
     def get_item_set(self) -> Set[E]:
@@ -54,10 +64,10 @@ class Node(Generic[E, T]):
     def set_ub(self, ub: float):
         self.ub = ub
 
-    def get_children(self) -> List['Node[E, T]']:
+    def get_children(self) -> List["Node[E, T]"]:
         return self.children
 
-    def set_children(self, children: List['Node[E, T]']):
+    def set_children(self, children: List["Node[E, T]"]):
         self.children = children
 
     def check_wPFI(self, m_sup: int) -> bool:
@@ -76,10 +86,12 @@ class Node(Generic[E, T]):
             else:
                 y += "Root"
         y += "]"
-        return (f"{s}, {formatDouble(self.sup)}, {formatDouble(self.e_sup)}, "
-                f"{'?' if self.p_sup == -1 else formatDouble(self.p_sup)}, "
-                f"{formatDouble(self.lb)}, {formatDouble(self.ub)}, {y}, "
-                f"{formatDouble(self.avg_weight)} => {self.iswPFI}")
+        return (
+            f"{s}, {Utils.format_double(self.sup)}, {Utils.format_double(self.e_sup)}, "
+            f"{'?' if self.p_sup == -1 else Utils.format_double(self.p_sup)}, "
+            f"{Utils.format_double(self.lb)}, {Utils.format_double(self.ub)}, {y}, "
+            f"{Utils.format_double(self.avg_weight)} => {self.iswPFI}"
+        )
 
     def get_node_name(self) -> str:
         return "[" + ", ".join(str(i) for i in self.item_set) + "]"

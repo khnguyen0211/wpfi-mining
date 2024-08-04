@@ -1,7 +1,8 @@
 from typing import TypeVar, Generic, Dict, Set
 from models.item import Item
 
-E = TypeVar('E', bound='Item')
+E = TypeVar("E", bound="Item")
+
 
 class Transaction(Generic[E]):
     def __init__(self, items: Dict[E, float] = None):

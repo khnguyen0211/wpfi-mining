@@ -69,6 +69,7 @@ class wPFIApriori(Generic[E, T]):
             difference_of_two_lists: set[E] = Utils.get_difference_of_two_lists(
                 IPrime, X
             )
+
             for item in difference_of_two_lists:
                 X_and_item = X.copy()
                 X_and_item.add(item)
@@ -82,6 +83,7 @@ class wPFIApriori(Generic[E, T]):
                 Utils.get_difference_of_two_lists(self.items, IPrime),
                 X,
             )
+
             for item in difference_of_two_nested_lists:
                 X_and_item = X.copy()
                 X_and_item.add(item)
@@ -91,6 +93,48 @@ class wPFIApriori(Generic[E, T]):
                 ):
                     if Utils.not_existed_in_set(Ck, X_and_item):
                         Ck.append(X_and_item)
+
+        return Ck
+
+    def generate_wpfi_candidates_optimize(self, W_PFIs: list[set[E]]):
+
+        Ck: list[set[E]] = []
+        IPrime: set[E] = Utils.get_distinct_list_from_w_PFIs(W_PFIs)
+
+        for X in W_PFIs:
+            difference_of_two_lists: set[E] = Utils.get_difference_of_two_lists(
+                IPrime, X
+            )
+
+            for item in difference_of_two_lists:
+                X_and_item = X.copy()
+                X_and_item.add(item)
+
+                if Utils.get_avg_weight(X_and_item) >= self.t:
+                    if Utils.probabilistic_condition(
+                        self.UD, self.m_sup, self.t, self.alpha, X, item
+                    ):
+                        if Utils.not_existed_in_set(Ck, X_and_item):
+                            Ck.append(X_and_item)
+
+            minWeightItem: E = Utils.find_min_weight_item(X)
+            difference_of_two_nested_lists: set[E] = Utils.get_difference_of_two_lists(
+                Utils.get_difference_of_two_lists(self.items, IPrime),
+                X,
+            )
+
+            for item in difference_of_two_nested_lists:
+                X_and_item = X.copy()
+                X_and_item.add(item)
+
+                if Utils.get_avg_weight(X_and_item) >= self.t and item.get_weight() < (
+                    0.0 if minWeightItem is None else minWeightItem.get_weight()
+                ):
+                    if Utils.probabilistic_condition(
+                        self.UD, self.m_sup, self.t, self.alpha, X, item
+                    ):
+                        if Utils.not_existed_in_set(Ck, X_and_item):
+                            Ck.append(X_and_item)
 
         return Ck
 

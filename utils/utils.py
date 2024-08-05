@@ -2,6 +2,7 @@ from typing import TypeVar, Generic, Set, List
 
 import numpy as np
 import math
+from scipy.stats import poisson
 
 from models.item import Item
 from models.transaction import Transaction
@@ -103,7 +104,7 @@ class Utils(Generic[E, T]):
         return support
 
     @staticmethod
-    def get_expected_support(UD, item_set: set[E]):
+    def get_expected_support(UD: list[T], item_set: set[E]):
         rs = 0.0
         for trans in UD:
             if set(trans.get_items().keys()).issuperset(item_set):
@@ -155,3 +156,44 @@ class Utils(Generic[E, T]):
                 return item
 
         return None
+
+    @staticmethod
+    def f_poisson(x: float, u: float, t: float, m: float) -> float:
+        a = poisson(u)
+        return a.cdf(math.floor(x)) + (t / m) - 1
+
+    @staticmethod
+    def derivative_f_poisson(x: float, u: float) -> float:
+        a = poisson(u)
+        total = 0.0
+        for k in range(math.floor(abs(x)) + 1):
+            total += a.pmf(k) * (k / u - 1)
+        return total
+
+    @staticmethod
+    def newton_raphson_method(x: float, u: float, t: float, m: float) -> float:
+        EPSILON = 1e-10
+        while True:
+            derivative = Utils.derivative_f_poisson(x, u)
+            if abs(derivative) < EPSILON:
+                break
+            h = Utils.f_poisson(x, u, t, m) / derivative
+            if abs(h) < EPSILON:
+                break
+            u = u - h
+        return u
+
+    def probabilistic_condition(
+        UD: list[T], m_sup: float, t: float, alpha: float, item_set: Set[E], item: E
+    ) -> bool:
+        muy_x = Utils.get_expected_support(UD, item_set)
+
+        muy_y = Utils.get_expected_support(UD, {item})
+
+        n = len(UD)
+
+        max_weight = max(Utils.get_avg_weight(item_set), item.get_weight())
+
+        muy_hat = Utils.newton_method(m_sup - 1, m_sup, t, max_weight)
+
+        return min(muy_x, muy_y) >= muy_hat and muy_x * muy_y >= alpha * n * muy_hat

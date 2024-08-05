@@ -15,13 +15,13 @@ class wPFIApriori(Generic[E, T]):
         self.t = t
         self.alpha = alpha
 
-    def wPFI_apriori_mining(self):
+    def wpfi_apriori_mining(self):
         w_PFI_final = []
-        w_PFI_1 = self.find_size_one_wPFI()
+        w_PFI_1 = self.find_size_one_wpfi()
         w_PFI_final.append(w_PFI_1)
         k = 1
         while w_PFI_final[k - 1]:
-            Ck = self.generate_wpfi_candidates(w_PFI_final[k - 1])
+            Ck = self.generate_wpfi_candidates_optimize(w_PFI_final[k - 1])
             w_PFI_k = self.find_size_k_wpfi(Ck)
             w_PFI_final.append(w_PFI_k)
             k += 1
@@ -30,7 +30,7 @@ class wPFIApriori(Generic[E, T]):
 
         return w_PFI_final
 
-    def find_size_one_wPFI(self) -> list[set[E]]:
+    def find_size_one_wpfi(self) -> list[set[E]]:
         sizeOneWpfis: list[set[E]] = []
         for i in self.items:
             itemList: set[E] = {i}
@@ -97,7 +97,6 @@ class wPFIApriori(Generic[E, T]):
         return Ck
 
     def generate_wpfi_candidates_optimize(self, W_PFIs: list[set[E]]):
-
         Ck: list[set[E]] = []
         IPrime: set[E] = Utils.get_distinct_list_from_w_PFIs(W_PFIs)
 
